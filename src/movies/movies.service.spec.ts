@@ -1,22 +1,48 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { MoviesService } from './movies.service';
+import { NotFoundException } from '@nestjs/common';
 
 describe('MoviesService', () => {
-  let controller: MoviesService;
+  let service: MoviesService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [MoviesService],
     }).compile();
 
-    controller = module.get<MoviesService>(MoviesService);
+    service = module.get<MoviesService>(MoviesService);
   });
 
   it('should be defined', () => {
-    expect(controller).toBeDefined();
+    expect(service).toBeDefined();
   });
 
-  it('should be 4', () => {
-    expect(2 + 3).toEqual(5);
+  describe('getAll', () => {
+    it('should return an array', () => {
+      const result = service.getAll();
+      expect(result).toBeInstanceOf(Array);
+    });
+  });
+
+  describe('getOne', () => {
+    it('should return an movie', () => {
+      service.create({
+        title: 'Test Movie',
+        generes: ['test'],
+        year: 2000,
+      });
+      const movie = service.getOne(1);
+      expect(movie).toBeDefined();
+      expect(movie.id).toEqual(1);
+    });
+
+    it('should throw 404 Error', () => {
+      try {
+        service.getOne(999);
+      } catch (e) {
+        expect(e).toBeInstanceOf(NotFoundException);
+        expect(e.message).toEqual('Movie with ID 999 not found');
+      }
+    });
   });
 });
